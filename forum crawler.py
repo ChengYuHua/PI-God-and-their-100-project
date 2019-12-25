@@ -5,7 +5,7 @@ from lxml import etree
 
 def check_content(content, keyword):  # 檢查該篇討論串討論主題是否為目標餐廳
     correct = 0
-    for char in keyword:
+    for char in keyword[0:4]:
         if char in content:
             correct += 1
     if correct >= 2:
