@@ -61,10 +61,6 @@ def parser():
     return items
 
 
-user_agents = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'
-driver = webdriver.Chrome(executable_path="chromedriver")
-
-
 def restaurant_crawler(user_agents, driver):
     foodType = input()
     place = input()
@@ -88,6 +84,12 @@ def restaurant_crawler(user_agents, driver):
 
     driver.close()
     return restaurants
+
+
+user_agents = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'
+driver = webdriver.Chrome(executable_path="chromedriver")
+restaurant_crawler(user_agents, driver)
+
 
 """
 使用 for 迴圈從 restaraunts_list 裡，一家一家餐廳抓出來
