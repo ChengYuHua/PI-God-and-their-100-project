@@ -1,3 +1,7 @@
+import requests
+from bs4 import BeautifulSoup
+from selenium import webdriver
+import time
 """
 1.前置作業
 import 需要的 library
@@ -27,7 +31,7 @@ class Restaraunt:
     dcard_url = []  # dcard網址
     ifoodie_url = []  # ifoodie網址
     pixnet_url = []  # pixnet網址
-	
+
     # 函數呼叫時，依序回傳該細項正評總分、中立總分和負評總分
 
     def total_service(self):
@@ -45,7 +49,47 @@ category = input()
 建一個 all_score 的 list，之後會拿來存所有餐廳的評分和資訊
 
 2.程式動起來
-使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaraunts_list
+"""
+
+
+# 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaraunts_list
+def parser():
+    html = driver.page_source
+    soup = BeautifulSoup(html, 'html.parser')
+    items = soup.find_all("div", attrs={"class": "dbg0pd"})
+    items = [i.text for i in items]
+    return items
+
+
+user_agents = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'
+driver = webdriver.Chrome(executable_path="chromedriver")
+
+
+def restaurant_crawler(user_agents, driver):
+    foodType = input()
+    place = input()
+    restaurants = []
+    last_page = False
+
+    google_url = 'https://www.google.com.tw/search?q='
+    driver.get(google_url+foodType+"+"+place)
+    time.sleep(2)
+
+    more_place = driver.find_element_by_class_name("i0vbXd").click()
+    restaurants += parser()
+
+    while last_page is False:
+        try:
+            next_page = driver.find_element_by_id("pnnext").click()
+            restaurants += parser()
+            time.sleep(2)
+        except:
+            last_page = True
+
+    driver.close()
+    return restaurants
+
+"""
 使用 for 迴圈從 restaraunts_list 裡，一家一家餐廳抓出來
 把餐廳變成 Restaurant class
 i = Restaurant()
