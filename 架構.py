@@ -191,13 +191,17 @@ selector = etree.HTML(results.text)  # 只有ptt會用到
 
 def ifoodie_crawler():
     p_tags = soup.find_all('p')
+    article = str()
     for tag in p_tags:
-        print(tag.get_text())
+        article += tag.get_text()
+    return article
 
 def pixnet_crawler():
     p_tags = soup.find_all('p')
+    article = str()
     for tag in p_tags:
-        print(tag.get_text())
+        article += tag.get_text()
+    return article
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
