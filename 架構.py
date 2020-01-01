@@ -54,6 +54,7 @@ category = input()
 class Restaurant:
 
 
+# 驊有更好的寫法
 A = Restaurant()
 B = Restaurant()
 C = Restaurant()
@@ -108,12 +109,12 @@ def restaurant_crawler(food_local, place_local):
     time.sleep(2)
 
     more_place = driver.find_element_by_class_name("i0vbXd").click()
-    restaurants += parser()  # +=還是append？
+    restaurants += parser()
 
     while last_page is False:
         try:
             next_page = driver.find_element_by_id("pnnext").click()
-            restaurants += parser()  # +=還是append？
+            restaurants += parser()
             time.sleep(2)
         except:
             last_page = True
@@ -122,12 +123,9 @@ def restaurant_crawler(food_local, place_local):
     return restaurants
 
 
-sites = ["www.ptt.cc"]
-
-
-def google_crawler(keywords):  # 餐廳的一個屬性，keywords為查詢的關鍵字
+def google_crawler(keywords, site):  # 餐廳的一個屬性，keywords為查詢的關鍵字
     google_url = 'https://www.google.com.tw/search?q='
-    google_results = requests.get(google_url+keywords, user_agents)
+    google_results = requests.get(google_url+keywords+site, user_agents)
     google_soup = BeautifulSoup(google_results.text, 'html.parser')
 
     items = google_soup.find_all("div", attrs={"class": "kCrYT"})
@@ -139,6 +137,12 @@ def google_crawler(keywords):  # 餐廳的一個屬性，keywords為查詢的關
         except:
             pass
     return urls
+
+
+sites = ["site:www.ptt.cc", "site:www.dcard.tw", "site:ifoodie.tw", "痞客邦"]
+all_urls = []
+for a_site in sites:  # 在主程式碼
+    all_urls.append(google_crawler(keywords, a_site))
 
 
 # 從論壇爬文章會用到的函數：check_content、ptt_crawler、dcard_crawler、、
@@ -157,7 +161,7 @@ def ptt_crawler(ptt_soup, ptt_selector):  # 餐廳的一個屬性
     title = ptt_soup.find_all("span", attrs={"class": "article-meta-value"})[2].text
     first_floor = ptt_selector.xpath('//*[@id="main-content"]/text()[1]')
     check_item = title+first_floor[0]
-    if check_content(check_item):
+    if check_content(check_item, restaurant_name) is True:
         push = soup.find_all("span", attrs={"class": "f3 push-content"})
         push = [ptt_p.text for ptt_p in push]
         article = check_item+''.join(push)
@@ -170,7 +174,7 @@ def dcard_crawler(dcard_soup):  # 餐廳的一個屬性
     title = dcard_soup.find_all("h1", attrs={"class": "Post_title_2O-1el"})[0].text
     first_floor = dcard_soup.find_all("div", attrs={"class": "Post_content_NKEl9d"})[0].text
     check_item = title+first_floor
-    if check_content(check_item):  # 還要傳keyword進去
+    if check_content(check_item, restaurant_name) is True:  # 還要傳keyword進去
         push = dcard_soup.find_all("div", attrs={"class": "CommentEntry_content_1ATrw1"})
         push = [p.text for p in push]
         article = check_item+''.join(push)
@@ -178,34 +182,31 @@ def dcard_crawler(dcard_soup):  # 餐廳的一個屬性
     else:
         return None
 
-# ifoodie
+
 url = 'https://ifoodie.tw/post/5dea600d2261390a2235125d-%E5%8F%B0%E5%8C%97%E8%90%AC%E8%8F%AF%E6%96%B0%E5%8C%97%E4%B8%89%E9%87%8D%E8%B6%85%E5%A5%BD%E5%90%83%E8%8A%B1%E7%94%9F%E6%B2%BE%E9%86%AC%E7%9F%B3%E9%A0%AD%E7%81%AB%E9%8D%8B%E6%8E%A8'
-r = requests.get(url)
-soup = BeautifulSoup(r.text, 'html.parser')
-
-p_tags = soup.find_all('p')
-for tag in p_tags:
-  print(tag.get_text())
-
-results = requests.get("https://www.dcard.tw/f/nccu/p/231015687")
-soup = BeautifulSoup(results.text, 'html.parser')
-selector = etree.HTML(results.text)
-
-# pixnet
-url = ('http://gotwtop1.pixnet.net/blog/post/326852833-%E3%80%90%E5%8F%B0%E5%8C%97-%E4%B8%AD%E6%AD%A3%E3%80%91%E7%99%BC%E7%8F%BE%E7%BE%A9%E5%A4%A7%E5%88%A9%E9%BA%B5-%E5%85%AC%E9%A4%A8%E5%95%86%E5%9C%88-%E5%8F%B0%E5%A4%A7-')
-r = requests.get(url)
+results = requests.get(url)
 r.encoding='utf-8'
 soup = BeautifulSoup(r.text, 'html.parser')
+selector = etree.HTML(results.text)  # 只有ptt會用到
 
-p_tags = soup.find_all('p')
-for tag in p_tags:
-  print(tag.get_text())
+def ifoodie_crawler():
+    p_tags = soup.find_all('p')
+    for tag in p_tags:
+        print(tag.get_text())
 
+def pixnet_crawler():
+    p_tags = soup.find_all('p')
+    for tag in p_tags:
+        print(tag.get_text())
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
     # 把餐廳變成 Restaurant class
-    i = Restaurant()
+    restaurant_objects[i] = Restaurant()
+    Restaurant.name = i
+
+
+
     """
     用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
 
