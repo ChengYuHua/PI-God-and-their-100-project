@@ -445,13 +445,13 @@ reach_sort = []
 speed_sort = []
 
 for i in range(len(all_total)):  # 每跑一個迴圈可以找到未被選取過的數值中的最大值
-    max_total = 0
-    max_service = 0
-    max_food = 0
-    max_cp = 0
-    max_env = 0
-    max_reach = 0
-    max_speed = 0
+    max_total = -1
+    max_service = -1
+    max_food = -1
+    max_cp = -1
+    max_env = -1
+    max_reach = -1
+    max_speed = -1
     for j in range(len(total)):  # 把每一個數字和現有的最大值比較，找出最大的數值
         if all_total[j] > max_total:
             max_total = all_total[i]
