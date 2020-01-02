@@ -207,7 +207,7 @@ speed = np.array([0, 0])
 
     # 第二層會是針對該餐廳的文章
     for clean_text in articles['res']: # articles也是dict，裡面也是餐廳的名詞，values是各篇文章
-        #第三層會是針對個別的文章 先比較一篇文章的正負評，比大小算出100 010 001那些，然後累加到xx_score的矩陣中
+        #第 三層會是針對個別的文章 先比較一篇文章的正負評，比大小算出100 010 001那些，然後累加到xx_score的矩陣中
         for i, term in enumerate(clean_text):
                 total_cnt = service_cnt + food_cnt + cp_cnt + speed_cnt + environment_cnt + reachable_cnt
                 service_cnt += determine_amount(clean_text, i, "service", corpus)
