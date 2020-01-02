@@ -414,7 +414,7 @@ for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一
                 else:
                     break
                 restaurant_objects[i].total, restaurant_objects[i].service, restaurant_objects[i].food, restaurant_objects[i].cp, restaurant_objects[i].env, restaurant_objects[i].reach, restaurant_objects[i].speed += rest_count()
-                
+
     else:
         break
 
@@ -444,25 +444,53 @@ env_sort = []
 reach_sort = []
 speed_sort = []
 
-max_total = 0
-max_service = 0
-max_food = 0
-max_cp = 0
-max_env = 0
-max_reach = 0
-max_speed = 0
-for i in range(len(all_total)):
-    if all_total[i] > max_total or i == 0:
-        max_total = all_total[i]
-        total_index = i
-    if all_service[i] > max_service or i == 0:
-        max_service = all_service[i]
-        service_index = i
-    if all_food[i] > max_food or i == 0:
-        max_food = all_food[i]
-        
-    service_sort.append(max(all_service))
-    
+for i in range(len(all_total)):  # 每跑一個迴圈可以找到未被選取過的數值中的最大值
+    max_total = 0
+    max_service = 0
+    max_food = 0
+    max_cp = 0
+    max_env = 0
+    max_reach = 0
+    max_speed = 0
+    for j in range(len(total)):  # 把每一個數字和現有的最大值比較，找出最大的數值
+        if all_total[j] > max_total:
+            max_total = all_total[i]
+            total_index = i
+        if all_service[j] > max_service:
+            max_service = all_service[i]
+            service_index = i
+        if all_food[j] > max_food:
+            max_food = all_food[i]
+            food_index = i
+        if all_cp[j] > max_cp:
+            max_cp = all_cp[i]
+            cp_index = i
+        if all_env[j] > max_env:
+            max_env = all_env[i]
+            env_index = i
+        if all_reach[j] > max_reach:
+            max_reach = all_reach[i]
+            reach_index = i
+        if all_speed[j] > max_speed:
+            max_speed = all_speed[i]
+            speed_index = i
+    # 找到最大值後，存取index，並把最大值的位置改寫為０
+    total_sort.append(total_index)
+    service_sort.append(service_index)
+    food_sort.append(food_index)
+    cp_sort.append(cp_index)
+    env_sort.append(env_index)
+    reach_sort.append(reach_index)
+    speed_sort.append(speed_index)
+
+    all_total[total_index] = 0
+    all_service[service_index] = 0
+    all_food[food_index] = 0
+    all_cp[cp_index] = 0
+    all_env[env_index] = 0
+    all_reach[reach_index] = 0
+    all_speed[speed_index] = 0
+
 
     """
     用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
