@@ -152,21 +152,6 @@ class Restaurant:
     speed = np.array([0, 0])
     name = ' '
 
-
-# 為了檢查計數def能不能用而寫出的爬蟲程式，可省
-url = (
-    'http://gotwtop1.pixnet.net/blog/post/326852833-%E3%80%90%E5%8F%B0%E5%8C%97-%E4%B8%AD%E6%AD%A3%E3%80%91%E7%99%BC%E7%8F%BE%E7%BE%A9%E5%A4%A7%E5%88%A9%E9%BA%B5-%E5%85%AC%E9%A4%A8%E5%95%86%E5%9C%88-%E5%8F%B0%E5%A4%A7-')
-r = requests.get(url)
-r.encoding = 'utf-8'
-soup = BeautifulSoup(r.text, 'html.parser')
-
-total_text = ""
-p_tags = soup.find_all('p')
-for tag in p_tags:
-    total_text += tag.get_text()
-    print(tag.get_text())
-clean_text = text_clean(total_text)
-
 # loading the corpus  # 開csv檔的程式
 corpus = {}
 with open('/Users/mac/Desktop/Corpus.csv', newline='', encoding='utf-8') as f:
@@ -184,69 +169,34 @@ with open('/Users/mac/Desktop/Corpus.csv', newline='', encoding='utf-8') as f:
         corpus[key] = temp
 
 
+# 會是針對個別的文章 先比較一篇文章的正負評，比大小算出100 010 001那些，然後累加到xx_score的矩陣中
+def rest_count(a_clean_text):
+    service_cnt = 0
+    food_cnt = 0
+    cp_cnt = 0
+    speed_cnt = 0
+    environment_cnt = 0
+    reachable_cnt = 0
 
-# Complete Structure below
-total_cnt = 0
-service_cnt = 0
-food_cnt = 0
-cp_cnt = 0
-speed_cnt = 0
-environment_cnt = 0
-reachable_cnt = 0
-# 六面向+總體的矩陣，算累績分數
-total_score = np.array([0, 0, 0])
-service_score = np.array([0, 0, 0])
-food_score = np.array([0, 0, 0])
-cp_score = np.array([0, 0, 0])
-speed_score = np.array([0, 0, 0])
-environment_score = np.array([0, 0, 0])
-reachable_score = np.array([0, 0, 0])
+    for i, term in enumerate(a_clean_text):
+        service_cnt += determine_amount(a_clean_text, i, "service", corpus)
+        food_cnt += determine_amount(a_clean_text, i, "food", corpus)
+        cp_cnt += determine_amount(a_clean_text, i, "cp", corpus)
+        speed_cnt += determine_amount(a_clean_text, i, "speed", corpus)
+        environment_cnt += determine_amount(a_clean_text, i, "environment", corpus)
+        reachable_cnt += determine_amount(a_clean_text, i, "reachable", corpus)
 
-# 一家餐廳在各篇文章中，六面向的正負比例
-total = np.array([0, 0])
-service = np.array([0, 0])
-food = np.array([0, 0])
-cp = np.array([0, 0])
-env = np.array([0, 0])
-reach = np.array([0, 0])
-speed = np.array([0, 0])
+    total_cnt = service_cnt + food_cnt + cp_cnt + speed_cnt + environment_cnt + reachable_cnt
 
-    # 第二層會是針對該餐廳的文章
-    for clean_text in articles['res']: # articles也是dict，裡面也是餐廳的名詞，values是各篇文章
-        #第 三層會是針對個別的文章 先比較一篇文章的正負評，比大小算出100 010 001那些，然後累加到xx_score的矩陣中
-        for i, term in enumerate(clean_text):
-                total_cnt = service_cnt + food_cnt + cp_cnt + speed_cnt + environment_cnt + reachable_cnt
-                service_cnt += determine_amount(clean_text, i, "service", corpus)
-                food_cnt += determine_amount(clean_text, i, "food", corpus)
-                cp_cnt += determine_amount(clean_text, i, "cp", corpus)
-                speed_cnt += determine_amount(clean_text, i, "speed", corpus)
-                environment_cnt += determine_amount(clean_text, i, "environment", corpus)
-                reachable_cnt += determine_amount(clean_text, i, "reachable", corpus)
-        total_score += check_pos_neg(total_cnt)
-        service_score += check_pos_neg(service_cnt)
-        food_score += check_pos_neg(food_cnt)
-        cp_score += check_pos_neg(cp_cnt)
-        speed_score += check_pos_neg(speed_cnt)
-        environment_score += check_pos_neg(environment_cnt)
-        reachable_score += check_pos_neg(reachable_cnt)
-
-# 最後會輸出的是 一間餐廳的總文章正負比例
-    total[0] = total_score[0]/(total_score[0] + total_score[1] + total_score[2])
-    total[1] = total_score[1] / (total_score[0] + total_score[1] + total_score[2])
-    service[0] = service_score[0]/(service_score[0] + service_score[1] + service_score[2])
-    service[1] = service_score[1] / (service_score[0] + service_score[1] + service_score[2])
-    food[0] = food_score[0] / (food_score[0] + food_score[1] + food_score[2])
-    food[1] = food_score[1] / (food_score[0] + food_score[1] + food_score[2])
-    cp[0] = cp_score[0] / (cp_score[0] + cp_score[1] + cp_score[2])
-    cp[1] = cp_score[1] / (cp_score[0] + cp_score[1] + cp_score[2])
-    speed[0] = speed_score[0] / (speed_score[0] + speed_score[1] + speed_score[2])
-    speed[1] = speed_score[1] / (speed_score[0] + speed_score[1] + speed_score[2])
-    env[0] = environment_score[0] / (environment_score[0] + environment_score[1] + environment_score[2])
-    env[1] = environment_score[1] / (environment_score[0] + environment_score[1] + environment_score[2])
-    reach[0] = reachable_score[0] / (reachable_score[0] + reachable_score[1] + reachable_score[2])
-    reach[1] = reachable_score[1] / (reachable_score[0] + reachable_score[1] + reachable_score[2])
-
-
+    # 六面向+總體的矩陣，算累績分數
+    total_score = check_pos_neg(total_cnt)
+    service_score = check_pos_neg(service_cnt)
+    food_score = check_pos_neg(food_cnt)
+    cp_score = check_pos_neg(cp_cnt)
+    speed_score = check_pos_neg(speed_cnt)
+    environment_score = check_pos_neg(environment_cnt)
+    reachable_score = check_pos_neg(reachable_cnt)
+    return total_score, service_score, food_score, cp_score, environment_score, reachable_score, speed_score
 
 
 # 驊有更好的寫法
@@ -404,8 +354,24 @@ for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一
         for a_site in sites:
             all_urls.append(google_crawler(i, a_site))
         for j in range(len(all_urls)):
+            # 一家餐廳在各篇文章中，六面向的正負比例
+            total = np.array([0, 0])
+            service = np.array([0, 0])
+            food = np.array([0, 0])
+            cp = np.array([0, 0])
+            env = np.array([0, 0])
+            reach = np.array([0, 0])
+            speed = np.array([0, 0])
+
+            total_add = np.array([0, 0, 0])
+            service_add = np.array([0, 0, 0])
+            food_add = np.array([0, 0, 0])
+            cp_add = np.array([0, 0, 0])
+            env_add = np.array([0, 0, 0])
+            reach_add = np.array([0, 0, 0])
+            speed_add = np.array([0, 0, 0])
             for k in range(len(all_urls[j])):
-                results = requests.get(url)
+                results = requests.get(all_urls[j][k])
                 results.encoding = 'utf-8'
                 soup = BeautifulSoup(results.text, 'html.parser')
                 if j == 0:
@@ -419,11 +385,36 @@ for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一
                     article = pixnet_crawler(soup)
                 else:
                     break
-                restaurant_objects[i].total, restaurant_objects[i].service, restaurant_objects[i].food, restaurant_objects[i].cp, restaurant_objects[i].env, restaurant_objects[i].reach, restaurant_objects[i].speed += rest_count()
+                clean_article = text_clean(article)
+                article_total, article_service, article_food, article_cp, article_env, article_reach, article_speed = rest_count(clean_article)
+                total_add += article_total
+                service_add += article_service
+                food_add += article_food
+                cp_add += article_cp
+                env_add += article_env
+                reach_add += article_reach
+                speed_add += article_speed
+            
+            # 最後會輸出的是 一間餐廳的總文章正負比例
+            restaurant_objects[i].total[0] = total_add[0] / (total_add[0] + total_add[1] + total_add[2])
+            restaurant_objects[i].total[1] = total_add[2] / (total_add[0] + total_add[1] + total_add[2])
+            restaurant_objects[i].service[0] = service_add[0] / (service_add[0] + service_add[1] + service_add[2])
+            restaurant_objects[i].service[1] = service_add[2] / (service_add[0] + service_add[1] + service_add[2])
+            restaurant_objects[i].food[0] = food_add[0] / (food_add[0] + food_add[1] + food_add[2])
+            restaurant_objects[i].food[1] = food_add[2] / (food_add[0] + food_add[1] + food_add[2])
+            restaurant_objects[i].cp[0] = cp_add[0] / (cp_add[0] + cp_add[1] + cp_add[2])
+            restaurant_objects[i].cp[1] = cp_add[2] / (cp_add[0] + cp_add[1] + cp_add[2])
+            restaurant_objects[i]. speed[0] = speed_add[0] / (speed_add[0] + speed_add[1] + speed_add[2])
+            restaurant_objects[i].speed[1] = speed_add[2] / (speed_add[0] + speed_add[1] + speed_add[2])
+            restaurant_objects[i].env[0] = env_add[0] / (env_add[0] + env_add[1] + env_add[2])
+            restaurant_objects[i].env[1] = env_add[2] / (env_add[0] + env_add[1] + env_add[2])
+            restaurant_objects[i].reach[0] = reach_add[0] / (reach_add[0] + reach_add[1] + reach_add[2])
+            restaurant_objects[i].reach[1] = reach_add[2] / (reach_add[0] + reach_add[1] + reach_add[2])
 
     else:
         break
 
+# 排序
 # 下列各list會裝各家餐廳的各項總分
 all_total = []
 all_service = []
@@ -593,13 +584,8 @@ window.master.title('餐應推薦')
 window.master.configure(background='#EE82EE')
 window.mainloop()
 
-
-
-
-
-
-    """
-    用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
+"""
+2.用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
 
     再跑一個迴圈 run 過所有該餐廳的評論文章(會以字串形式傳入)
     用Article class計算文章的分數
@@ -608,11 +594,8 @@ window.mainloop()
 
     餐廳的所有文章 run 完後，將餐廳名稱、各項分數編入 a_list，為該餐廳的 list
     將 a_list 放入 all_score 的 list
-    持續 run 到所以餐廳都跑過為止
-    """
+    持續 run 到所以餐廳都跑過為止    
 
-
-"""
 3.輸出
 視使用者要什麼（輸入什麼）從 all_restaraunt 選取該項目的 index，進行比較，由高到低輸出
 """
