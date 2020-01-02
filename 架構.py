@@ -3,6 +3,14 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
 from lxml import etree
+import re
+import numpy as np
+import jieba
+import csv
+
+foodType = input()  # 輸入食物種類
+place = input()  # 輸入地點
+
 """
 1.前置作業
 import 需要的 library
@@ -51,7 +59,188 @@ category = input()
 
 2.程式動起來
 """
+
+
+# clean all the punctuation and others 把文章斷詞的def（已經debug）
+def text_clean(text):
+    text = text.lower()
+    text = re.sub('<br>', ' ', text)
+    text = re.sub("http://[a-zA-z./\d]*", " ", text)
+    text = re.sub('[0-9]+', ' ', text)
+    text = re.sub('_+', ' ', text)
+    text = re.sub('[^\w\s]', ' ', text)
+    text = re.sub(r'\n', ' ', text)
+    text = re.sub(r'\r', ' ', text)
+    text = re.sub(r'[ぁ-ゟ]', ' ', text)
+    text = re.sub(r'[゠-ヿ]', ' ', text)
+    text = re.sub(' +', ' ', text)
+    seg_list = jieba.cut(text)
+    clean_text = []
+    for term in list(seg_list):
+        if (term.isalpha()):
+            clean_text.append(term)
+    return clean_text
+
+
+# 檢查一篇文章裡，六個面向的正負詞的計數，確定可以用的 def（已經debug）
+def determine_amount(clean_text, i, topic, corpus):
+    cnt = 0
+    if clean_text[i] in corpus[topic]:
+        flag_exist = 0
+        flag_good = 0
+        flag_bad = 0
+        for j in range(1, 4):
+            if clean_text[i + j] in corpus['good']:
+                flag_exist = 1
+                if clean_text[i + j - 1] in corpus['negative']:
+                    flag_good = 1
+            elif clean_text[i + j] in corpus['bad']:
+                flag_exist = -1
+                if clean_text[i + j - 1] in corpus['negative']:
+                    flag_bad = 1
+        if flag_exist == 1 and flag_good == 0:
+            cnt += 1
+        elif flag_exist == 1 and flag_good == 1:
+            cnt -= 1
+        elif flag_exist == -1 and flag_bad == 0:
+            cnt -= 1
+        elif flag_exist == -1 and flag_bad == 1:
+            cnt += 1
+    elif clean_text[i] in corpus[topic + "_good"]:
+        if i > 0:
+            if clean_text[i - 1] in corpus['negative']:
+                cnt -= 1
+            else:
+                cnt += 1
+        else:
+            cnt += 1
+    elif clean_text[i] in corpus[topic + "_bad"]:
+        if i > 0:
+            if clean_text[i - 1] in corpus['negative']:
+                cnt += 1
+            else:
+                cnt -= 1
+        else:
+            cnt -= 1
+    return cnt
+
+# 把文章計數轉換成001 100 010 等等 的def（已debug）
+# Check if the cnt is positive and return np.array
+def check_pos_neg(cnt):
+    if cnt > 0:
+        return np.array([1, 0, 0])
+    elif cnt == 0:
+        return np.array([0, 1, 0])
+    elif cnt < 0:
+        return np.array([0, 0, 1])
+
+
+# build the restaurant class and store all the parameters
 class Restaurant:
+    total = np.array([0, 0])
+    service = np.array([0, 0])
+    food = np.array([0, 0])
+    cp = np.array([0, 0])
+    env = np.array([0, 0])
+    reach = np.array([0, 0])
+    speed = np.array([0, 0])
+    name = ' '
+
+
+# 為了檢查計數def能不能用而寫出的爬蟲程式，可省
+url = (
+    'http://gotwtop1.pixnet.net/blog/post/326852833-%E3%80%90%E5%8F%B0%E5%8C%97-%E4%B8%AD%E6%AD%A3%E3%80%91%E7%99%BC%E7%8F%BE%E7%BE%A9%E5%A4%A7%E5%88%A9%E9%BA%B5-%E5%85%AC%E9%A4%A8%E5%95%86%E5%9C%88-%E5%8F%B0%E5%A4%A7-')
+r = requests.get(url)
+r.encoding = 'utf-8'
+soup = BeautifulSoup(r.text, 'html.parser')
+
+total_text = ""
+p_tags = soup.find_all('p')
+for tag in p_tags:
+    total_text += tag.get_text()
+    print(tag.get_text())
+clean_text = text_clean(total_text)
+
+# loading the corpus  # 開csv檔的程式
+corpus = {}
+with open('/Users/mac/Desktop/Corpus.csv', newline='', encoding='utf-8') as f:
+    reader = csv.reader(f)
+    for row in reader:
+        temp = []
+        key = ""
+        for i, term in enumerate(row):
+            if term == '\ufeffgood':
+                key += 'good'
+            elif i == 0:
+                key += term
+            elif term.isalpha():
+                temp.append(term)
+        corpus[key] = temp
+
+
+
+# Complete Structure below
+total_cnt = 0
+service_cnt = 0
+food_cnt = 0
+cp_cnt = 0
+speed_cnt = 0
+environment_cnt = 0
+reachable_cnt = 0
+# 六面向+總體的矩陣，算累績分數
+total_score = np.array([0, 0, 0])
+service_score = np.array([0, 0, 0])
+food_score = np.array([0, 0, 0])
+cp_score = np.array([0, 0, 0])
+speed_score = np.array([0, 0, 0])
+environment_score = np.array([0, 0, 0])
+reachable_score = np.array([0, 0, 0])
+
+# 一家餐廳在各篇文章中，六面向的正負比例
+total = np.array([0, 0])
+service = np.array([0, 0])
+food = np.array([0, 0])
+cp = np.array([0, 0])
+env = np.array([0, 0])
+reach = np.array([0, 0])
+speed = np.array([0, 0])
+
+    # 第二層會是針對該餐廳的文章
+    for clean_text in articles['res']: # articles也是dict，裡面也是餐廳的名詞，values是各篇文章
+        #第三層會是針對個別的文章 先比較一篇文章的正負評，比大小算出100 010 001那些，然後累加到xx_score的矩陣中
+        for i, term in enumerate(clean_text):
+                total_cnt = service_cnt + food_cnt + cp_cnt + speed_cnt + environment_cnt + reachable_cnt
+                service_cnt += determine_amount(clean_text, i, "service", corpus)
+                food_cnt += determine_amount(clean_text, i, "food", corpus)
+                cp_cnt += determine_amount(clean_text, i, "cp", corpus)
+                speed_cnt += determine_amount(clean_text, i, "speed", corpus)
+                environment_cnt += determine_amount(clean_text, i, "environment", corpus)
+                reachable_cnt += determine_amount(clean_text, i, "reachable", corpus)
+        total_score += check_pos_neg(total_cnt)
+        service_score += check_pos_neg(service_cnt)
+        food_score += check_pos_neg(food_cnt)
+        cp_score += check_pos_neg(cp_cnt)
+        speed_score += check_pos_neg(speed_cnt)
+        environment_score += check_pos_neg(environment_cnt)
+        reachable_score += check_pos_neg(reachable_cnt)
+
+# 最後會輸出的是 一間餐廳的總文章正負比例
+    total[0] = total_score[0]/(total_score[0] + total_score[1] + total_score[2])
+    total[1] = total_score[1] / (total_score[0] + total_score[1] + total_score[2])
+    service[0] = service_score[0]/(service_score[0] + service_score[1] + service_score[2])
+    service[1] = service_score[1] / (service_score[0] + service_score[1] + service_score[2])
+    food[0] = food_score[0] / (food_score[0] + food_score[1] + food_score[2])
+    food[1] = food_score[1] / (food_score[0] + food_score[1] + food_score[2])
+    cp[0] = cp_score[0] / (cp_score[0] + cp_score[1] + cp_score[2])
+    cp[1] = cp_score[1] / (cp_score[0] + cp_score[1] + cp_score[2])
+    speed[0] = speed_score[0] / (speed_score[0] + speed_score[1] + speed_score[2])
+    speed[1] = speed_score[1] / (speed_score[0] + speed_score[1] + speed_score[2])
+    env[0] = environment_score[0] / (environment_score[0] + environment_score[1] + environment_score[2])
+    env[1] = environment_score[1] / (environment_score[0] + environment_score[1] + environment_score[2])
+    reach[0] = reachable_score[0] / (reachable_score[0] + reachable_score[1] + reachable_score[2])
+    reach[1] = reachable_score[1] / (reachable_score[0] + reachable_score[1] + reachable_score[2])
+
+
 
 
 # 驊有更好的寫法
@@ -96,9 +285,6 @@ def parser():
 user_agents = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'
 driver = webdriver.Chrome(executable_path="chromedriver")
 
-foodType = input()
-place = input()
-
 
 def restaurant_crawler(food_local, place_local):
     restaurants = []
@@ -140,10 +326,11 @@ def google_crawler(keywords, site):  # 餐廳的一個屬性，keywords為查詢
 
 
 sites = ["site:www.ptt.cc", "site:www.dcard.tw", "site:ifoodie.tw", "痞客邦"]
+'''
 all_urls = []
 for a_site in sites:  # 在主程式碼
     all_urls.append(google_crawler(keywords, a_site))
-
+'''
 
 # 從論壇爬文章會用到的函數：check_content、ptt_crawler、dcard_crawler、、
 def check_content(content, keyword):  # 檢查該篇討論串討論主題是否為目標餐廳
@@ -157,7 +344,7 @@ def check_content(content, keyword):  # 檢查該篇討論串討論主題是否�
         return False
 
 
-def ptt_crawler(ptt_soup, ptt_selector):  # 餐廳的一個屬性
+def ptt_crawler(ptt_soup, ptt_selector, restaurant_name):  # 餐廳的一個屬性
     title = ptt_soup.find_all("span", attrs={"class": "article-meta-value"})[2].text
     first_floor = ptt_selector.xpath('//*[@id="main-content"]/text()[1]')
     check_item = title+first_floor[0]
@@ -170,7 +357,7 @@ def ptt_crawler(ptt_soup, ptt_selector):  # 餐廳的一個屬性
         return None
 
 
-def dcard_crawler(dcard_soup):  # 餐廳的一個屬性
+def dcard_crawler(dcard_soup, restaurant_name):  # 餐廳的一個屬性
     title = dcard_soup.find_all("h1", attrs={"class": "Post_title_2O-1el"})[0].text
     first_floor = dcard_soup.find_all("div", attrs={"class": "Post_content_NKEl9d"})[0].text
     check_item = title+first_floor
@@ -189,15 +376,15 @@ results.encoding='utf-8'
 soup = BeautifulSoup(results.text, 'html.parser')
 selector = etree.HTML(results.text)  # 只有ptt會用到
 
-def ifoodie_crawler():
-    p_tags = soup.find_all('p')
+def ifoodie_crawler(ifoodie_soup):
+    p_tags = ifoodie_soup.find_all('p')
     article = str()
     for tag in p_tags:
         article += tag.get_text()
     return article
 
-def pixnet_crawler():
-    p_tags = soup.find_all('p')
+def pixnet_crawler(pixnet_soup):
+    p_tags = pixnet_soup.find_all('p')
     article = str()
     for tag in p_tags:
         article += tag.get_text()
@@ -205,11 +392,77 @@ def pixnet_crawler():
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in restaurants_list: # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-    # 把餐廳變成 Restaurant class
-    restaurant_objects[i] = Restaurant()
-    Restaurant.name = i
+    if i <= 25:
+        restaurant_objects[i].name = i  # restaurant_objects[i] 是 class
+        all_urls = []
+        for a_site in sites:
+            all_urls.append(google_crawler(i, a_site))
+        for j in range(len(all_urls)):
+            for k in range(len(all_urls[j])):
+                results = requests.get(url)
+                results.encoding = 'utf-8'
+                soup = BeautifulSoup(results.text, 'html.parser')
+                if j == 0:
+                    selector = etree.HTML(results.text)
+                    article = ptt_crawler(soup, selector, i)
+                elif j == 1:
+                    article = dcard_crawler(soup, i)
+                elif j == 2:
+                    article = ifoodie_crawler(soup)
+                elif j == 3:
+                    article = pixnet_crawler(soup)
+                else:
+                    break
+                restaurant_objects[i].total, restaurant_objects[i].service, restaurant_objects[i].food, restaurant_objects[i].cp, restaurant_objects[i].env, restaurant_objects[i].reach, restaurant_objects[i].speed += rest_count()
+                
+    else:
+        break
 
+# 下列各list會裝各家餐廳的各項總分
+all_total = []
+all_service = []
+all_food = []
+all_cp = []
+all_env = []
+all_reach = []
+all_speed = []
+for i in restaurant_objects:
+    all_total.append(restaurant_objects[i].total)
+    all_service.apppend(restaurant_objects[i].service)
+    all_food.append(restaurant_objects[i].food)
+    all_cp.append(restaurant_objects[i].cp)
+    all_env.append(restaurant_objects[i].env)
+    all_reach.append(restaurant_objects[i].reach)
+    all_speed.append(restaurant_objects[i].speed)
 
+# 下列各list會裝排序過後的餐廳總分，用index表示是第幾個object
+total_sort = []
+service_sort = []
+food_sort = []
+cp_sort = []
+env_sort = []
+reach_sort = []
+speed_sort = []
+
+max_total = 0
+max_service = 0
+max_food = 0
+max_cp = 0
+max_env = 0
+max_reach = 0
+max_speed = 0
+for i in range(len(all_total)):
+    if all_total[i] > max_total or i == 0:
+        max_total = all_total[i]
+        total_index = i
+    if all_service[i] > max_service or i == 0:
+        max_service = all_service[i]
+        service_index = i
+    if all_food[i] > max_food or i == 0:
+        max_food = all_food[i]
+        
+    service_sort.append(max(all_service))
+    
 
     """
     用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
