@@ -234,13 +234,13 @@ def rest_count(a_clean_text):
     environment_cnt = 0
     reachable_cnt = 0
 
-    for i, term in enumerate(a_clean_text):
-        service_cnt += determine_amount(a_clean_text, i, "service", corpus)
-        food_cnt += determine_amount(a_clean_text, i, "food", corpus)
-        cp_cnt += determine_amount(a_clean_text, i, "cp", corpus)
-        speed_cnt += determine_amount(a_clean_text, i, "speed", corpus)
-        environment_cnt += determine_amount(a_clean_text, i, "environment", corpus)
-        reachable_cnt += determine_amount(a_clean_text, i, "reachable", corpus)
+    for abc, term in enumerate(a_clean_text):
+        service_cnt += determine_amount(a_clean_text, abc, "service", corpus)
+        food_cnt += determine_amount(a_clean_text, abc, "food", corpus)
+        cp_cnt += determine_amount(a_clean_text, abc, "cp", corpus)
+        speed_cnt += determine_amount(a_clean_text, abc, "speed", corpus)
+        environment_cnt += determine_amount(a_clean_text, abc, "environment", corpus)
+        reachable_cnt += determine_amount(a_clean_text, abc, "reachable", corpus)
 
     total_cnt = service_cnt + food_cnt + cp_cnt + speed_cnt + environment_cnt + reachable_cnt
 
@@ -415,7 +415,8 @@ def pixnet_crawler(pixnet_soup):
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-    if i <= 25:
+    if i <= 1:
+        store_i = i
         restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
         all_urls = []
         total_add = np.array([0, 0, 0])
@@ -445,7 +446,6 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                     article = pixnet_crawler(soup)
                 else:
                     continue
-                print(article)
                 if type(article) == 'NoneType' or article == None :
                     continue
                 else:
@@ -454,7 +454,6 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                 article_total, article_service, article_food, article_cp, article_env, article_reach, article_speed = rest_count(
                     clean_text)
                 # 單篇文章累加成一家餐廳
-                print(article_total)
                 total_add += article_total
                 service_add += article_service
                 food_add += article_food
@@ -462,14 +461,15 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                 env_add += article_env
                 reach_add += article_reach
                 speed_add += article_speed
-        print(total_add)
+        i = store_i
+        print(restaurant_objects[i].name, total_add)
+        print(restaurant_objects[0].total)
+        print(restaurant_objects[0].name)
         # 最後會輸出的是 一間餐廳的總文章正負比例
         restaurant_objects[i].total[0] = int(total_add[0]) / int((total_add[0] + total_add[1] + total_add[2]))
         restaurant_objects[i].total[1] = int(total_add[2]) / int((total_add[0] + total_add[1] + total_add[2]))
-        restaurant_objects[i].service[0] = int(service_add[0]) / int(
-                (service_add[0] + service_add[1] + service_add[2]))
-        restaurant_objects[i].service[1] = int(service_add[2]) / int(
-                (service_add[0] + service_add[1] + service_add[2]))
+        restaurant_objects[i].service[0] = int(service_add[0]) / int((service_add[0] + service_add[1] + service_add[2]))
+        restaurant_objects[i].service[1] = int(service_add[2]) / int((service_add[0] + service_add[1] + service_add[2]))
         restaurant_objects[i].food[0] = int(food_add[0]) / int((food_add[0] + food_add[1] + food_add[2]))
         restaurant_objects[i].food[1] = int(food_add[2]) / int((food_add[0] + food_add[1] + food_add[2]))
         restaurant_objects[i].cp[0] = int(cp_add[0]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
@@ -480,13 +480,17 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
         restaurant_objects[i].env[1] = int(env_add[2]) / int((env_add[0] + env_add[1] + env_add[2]))
         restaurant_objects[i].reach[0] = int(reach_add[0]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
         restaurant_objects[i].reach[1] = int(reach_add[2]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
-
-
+        print(restaurant_objects[0].total)
+        print(restaurant_objects[0].name)
 
 
     else:
         break
 
+print('陳彥杰')
+print(restaurant_objects)
+print(type(restaurant_objects[0]))
+print(type(restaurant_objects[0].total))
 # 排序
 # 下列各list會裝各家餐廳的各項總分
 all_total = []
@@ -496,15 +500,21 @@ all_cp = []
 all_env = []
 all_reach = []
 all_speed = []
-for i in restaurant_objects:
-    all_total.append(restaurant_objects[i].total)
-    all_service.apppend(restaurant_objects[i].service)
-    all_food.append(restaurant_objects[i].food)
-    all_cp.append(restaurant_objects[i].cp)
-    all_env.append(restaurant_objects[i].env)
-    all_reach.append(restaurant_objects[i].reach)
-    all_speed.append(restaurant_objects[i].speed)
+for i in range(len(restaurant_objects)):
+    print(i)
+    print(restaurant_objects[i])
+    print(restaurant_objects[i].name)
+    print(restaurant_objects[i].total)
+    all_total.append(restaurant_objects[i].total[0])
+    all_service.append(restaurant_objects[i].service[0])
+    all_food.append(restaurant_objects[i].food[0])
+    all_cp.append(restaurant_objects[i].cp[0])
+    all_env.append(restaurant_objects[i].env[0])
+    all_reach.append(restaurant_objects[i].reach[0])
+    all_speed.append(restaurant_objects[i].speed[0])
 
+print(all_total)
+print('蔡逸洪')
 # 下列各list會裝排序過後的餐廳總分，用index表示是第幾個object
 total_sort = []
 service_sort = []
@@ -515,35 +525,43 @@ reach_sort = []
 speed_sort = []
 
 for i in range(len(all_total)):  # 每跑一個迴圈可以找到未被選取過的數值中的最大值
-    max_total = -1
-    max_service = -1
-    max_food = -1
-    max_cp = -1
-    max_env = -1
-    max_reach = -1
-    max_speed = -1
-    for j in range(len(total)):  # 把每一個數字和現有的最大值比較，找出最大的數值
+    max_total = all_total[i]
+    max_service = all_service[i]
+    max_food = all_food[i]
+    max_cp = all_cp[i]
+    max_env = all_env[i]
+    max_reach = all_reach[i]
+    max_speed = all_speed[i]
+    total_index = i
+    service_index = i
+    food_index = i
+    cp_index = i
+    env_index = i
+    reach_index = i
+    speed_index = i
+
+    for j in range(len(all_total)):  # 把每一個數字和現有的最大值比較，找出最大的數值
         if all_total[j] > max_total:
-            max_total = all_total[i]
-            total_index = i
+            max_total = all_total[j]
+            total_index = j
         if all_service[j] > max_service:
-            max_service = all_service[i]
-            service_index = i
+            max_service = all_service[j]
+            service_index = j
         if all_food[j] > max_food:
-            max_food = all_food[i]
-            food_index = i
+            max_food = all_food[j]
+            food_index = j
         if all_cp[j] > max_cp:
-            max_cp = all_cp[i]
-            cp_index = i
+            max_cp = all_cp[j]
+            cp_index = j
         if all_env[j] > max_env:
-            max_env = all_env[i]
-            env_index = i
+            max_env = all_env[j]
+            env_index = j
         if all_reach[j] > max_reach:
-            max_reach = all_reach[i]
-            reach_index = i
+            max_reach = all_reach[j]
+            reach_index = j
         if all_speed[j] > max_speed:
-            max_speed = all_speed[i]
-            speed_index = i
+            max_speed = all_speed[j]
+            speed_index = j
     # 找到最大值後，存取index，並把最大值的位置改寫為０
     total_sort.append(total_index)
     service_sort.append(service_index)
@@ -561,7 +579,8 @@ for i in range(len(all_total)):  # 每跑一個迴圈可以找到未被選取過
     all_reach[reach_index] = 0
     all_speed[speed_index] = 0
 
-print(restaurant_objects[total_sort[0]].total)
+# print(restaurant_objects[total_sort[0]].total[0])
+# print(restaurant_objects[total_sort[0]].name)
 
 """
 2.用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
