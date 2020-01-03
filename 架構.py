@@ -93,8 +93,8 @@ def determine_amount(clean_text, i, topic, corpus):
     if clean_text[i] in corpus[topic]:
         flag_pos_neg = 0  # 正的代表正評，富的代表富屏
         flag_small = 0
-        for j in range(1, 4):#在第i個名詞中檢查前後j個形容詞與否定詞
-            if i + j < len(clean_text):#debug
+        for j in range(1, 4):  # 在第i個名詞中檢查前後j個形容詞與否定詞
+            if i + j < len(clean_text):  # debug
                 if clean_text[i + j] in corpus['good']:
                     if flag_pos_neg == 0:
                         flag_pos_neg = 1
@@ -115,7 +115,7 @@ def determine_amount(clean_text, i, topic, corpus):
                 if clean_text[i - j] in corpus['good']:
                     if flag_pos_neg == 0:
                         flag_pos_neg = 1
-                    if i-j-1 >= 0:
+                    if i - j - 1 >= 0:
                         if clean_text[i - j - 1] in corpus['negative']:
                             flag_pos_neg *= -1
                 elif clean_text[i - j] in corpus['bad']:
@@ -210,7 +210,7 @@ class Restaurant:
 
 # loading the corpus  # 開csv檔的程式
 corpus = {}
-with open('/Users/sdtaiwan/Desktop/Corpus.csv', newline='', encoding='utf-8') as f:
+with open('/Users/hank/Desktop/Corpus.csv', newline='', encoding='utf-8') as f:
     reader = csv.reader(f)
     for row in reader:
         temp = []
@@ -296,7 +296,7 @@ def parser():
 
 
 user_agents = 'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:18.0) Gecko/20100101 Firefox/18.0'
-driver = webdriver.Chrome(executable_path="/Users/sdtaiwan/Documents/GitHub/PI-God-and-their-100-project/chromedriver")
+driver = webdriver.Chrome(executable_path="/Users/hank/Desktop/chromedriver")
 
 
 def restaurant_crawler(food_local, place_local):
@@ -415,7 +415,7 @@ def pixnet_crawler(pixnet_soup):
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-    if i <= 1:
+    if i <= 4:
         store_i = i
         restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
         all_urls = []
@@ -428,10 +428,10 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
         speed_add = np.array([0, 0, 0])
         for a_site in sites:
             all_urls.append(google_crawler(restaurants_list[i], a_site))
-        for j in range(len(all_urls)):#輸入順序，選擇論壇
+        for j in range(len(all_urls)):  # 輸入順序，選擇論壇
             # 一家餐廳在各篇文章中，六面向的正負比例
 
-            for k in range(len(all_urls[j])):#輸入各個網址，爬出文章
+            for k in range(len(all_urls[j])):  # 輸入各個網址，爬出文章
                 results = requests.get(all_urls[j][k])
                 results.encoding = 'utf-8'
                 soup = BeautifulSoup(results.text, 'html.parser')
@@ -446,7 +446,7 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                     article = pixnet_crawler(soup)
                 else:
                     continue
-                if type(article) == 'NoneType' or article == None :
+                if type(article) == 'NoneType' or article is None:
                     continue
                 else:
                     clean_text = text_clean(article)
@@ -462,35 +462,20 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                 reach_add += article_reach
                 speed_add += article_speed
         i = store_i
-        print(restaurant_objects[i].name, total_add)
-        print(restaurant_objects[0].total)
-        print(restaurant_objects[0].name)
         # 最後會輸出的是 一間餐廳的總文章正負比例
-        restaurant_objects[i].total[0] = int(total_add[0]) / int((total_add[0] + total_add[1] + total_add[2]))
-        restaurant_objects[i].total[1] = int(total_add[2]) / int((total_add[0] + total_add[1] + total_add[2]))
-        restaurant_objects[i].service[0] = int(service_add[0]) / int((service_add[0] + service_add[1] + service_add[2]))
-        restaurant_objects[i].service[1] = int(service_add[2]) / int((service_add[0] + service_add[1] + service_add[2]))
-        restaurant_objects[i].food[0] = int(food_add[0]) / int((food_add[0] + food_add[1] + food_add[2]))
-        restaurant_objects[i].food[1] = int(food_add[2]) / int((food_add[0] + food_add[1] + food_add[2]))
-        restaurant_objects[i].cp[0] = int(cp_add[0]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
-        restaurant_objects[i].cp[1] = int(cp_add[2]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
-        restaurant_objects[i].speed[0] = int(speed_add[0]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
-        restaurant_objects[i].speed[1] = int(speed_add[2]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
-        restaurant_objects[i].env[0] = int(env_add[0]) / int((env_add[0] + env_add[1] + env_add[2]))
-        restaurant_objects[i].env[1] = int(env_add[2]) / int((env_add[0] + env_add[1] + env_add[2]))
-        restaurant_objects[i].reach[0] = int(reach_add[0]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
-        restaurant_objects[i].reach[1] = int(reach_add[2]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
-        print(restaurant_objects[0].total)
-        print(restaurant_objects[0].name)
-
+        restaurant_objects[i].total = [int(total_add[0]) / int((total_add[0] + total_add[1] + total_add[2])), int(total_add[2]) / int((total_add[0] + total_add[1] + total_add[2]))]
+        restaurant_objects[i].service = [int(service_add[0]) / int((service_add[0] + service_add[1] + service_add[2])), int(service_add[2]) / int((service_add[0] + service_add[1] + service_add[2]))]
+        restaurant_objects[i].food = [int(food_add[0]) / int((food_add[0] + food_add[1] + food_add[2])), int(food_add[2]) / int((food_add[0] + food_add[1] + food_add[2]))]
+        restaurant_objects[i].cp = [int(cp_add[0]) / int((cp_add[0] + cp_add[1] + cp_add[2])), int(cp_add[2]) / int((cp_add[0] + cp_add[1] + cp_add[2]))]
+        restaurant_objects[i].speed = [int(speed_add[0]) / int((speed_add[0] + speed_add[1] + speed_add[2])), int(speed_add[2]) / int((speed_add[0] + speed_add[1] + speed_add[2]))]
+        restaurant_objects[i].env = [int(env_add[0]) / int((env_add[0] + env_add[1] + env_add[2])), int(env_add[2]) / int((env_add[0] + env_add[1] + env_add[2]))]
+        restaurant_objects[i].reach = [int(reach_add[0]) / int((reach_add[0] + reach_add[1] + reach_add[2])), int(reach_add[2]) / int((reach_add[0] + reach_add[1] + reach_add[2]))]
 
     else:
         break
 
 print('陳彥杰')
-print(restaurant_objects)
-print(type(restaurant_objects[0]))
-print(type(restaurant_objects[0].total))
+
 # 排序
 # 下列各list會裝各家餐廳的各項總分
 all_total = []
@@ -579,8 +564,14 @@ for i in range(len(all_total)):  # 每跑一個迴圈可以找到未被選取過
     all_reach[reach_index] = 0
     all_speed[speed_index] = 0
 
-# print(restaurant_objects[total_sort[0]].total[0])
-# print(restaurant_objects[total_sort[0]].name)
+print(restaurant_objects[total_sort[0]].total[0])
+print(restaurant_objects[total_sort[0]].name)
+
+print(restaurant_objects[total_sort[1]].total[0])
+print(restaurant_objects[total_sort[1]].name)
+
+print(restaurant_objects[total_sort[2]].total[0])
+print(restaurant_objects[total_sort[2]].name)
 
 """
 2.用爬蟲找出該餐廳的文章網址，用list的形式存入該餐廳的Restaurant class中的ppt_url、dcard_url、ifoodie_url、pixnet_url
