@@ -91,26 +91,81 @@ def text_clean(text):
 def determine_amount(clean_text, i, topic, corpus):
     cnt = 0
     if clean_text[i] in corpus[topic]:
-        flag_exist = 0
-        flag_good = 0
-        flag_bad = 0
-        for j in range(1, 4):
-            if clean_text[i + j] in corpus['good']:
-                flag_exist = 1
-                if clean_text[i + j - 1] in corpus['negative']:
-                    flag_good = 1
-            elif clean_text[i + j] in corpus['bad']:
-                flag_exist = -1
-                if clean_text[i + j - 1] in corpus['negative']:
-                    flag_bad = 1
-        if flag_exist == 1 and flag_good == 0:
+        flag_pos_neg = 0  # 正的代表正評，富的代表富屏
+        flag_small = 0
+        for j in range(1, 4):#在第i個名詞中檢查前後j個形容詞與否定詞
+            if i + j < len(clean_text):#debug
+                if clean_text[i + j] in corpus['good']:
+                    if flag_pos_neg == 0:
+                        flag_pos_neg = 1
+                    if clean_text[i + j - 1] in corpus['negative']:
+                        flag_pos_neg *= -1
+                elif clean_text[i + j] in corpus['bad']:
+                    if flag_pos_neg == 0:
+                        flag_pos_neg = -1
+                    if clean_text[i + j - 1] in corpus['negative']:
+                        flag_pos_neg *= -1
+
+            if flag_pos_neg == 1:
+                flag_small += 1
+            elif flag_pos_neg == -1:
+                flag_small -= 1
+            flag_pos_neg = 0
+            if i - j >= 0:
+                if clean_text[i - j] in corpus['good']:
+                    if flag_pos_neg == 0:
+                        flag_pos_neg = 1
+                    if i-j-1 >= 0:
+                        if clean_text[i - j - 1] in corpus['negative']:
+                            flag_pos_neg *= -1
+                elif clean_text[i - j] in corpus['bad']:
+                    if flag_pos_neg == 0:
+                        flag_pos_neg = -1
+                    if i - j - 1 >= 0:
+                        if clean_text[i - j - 1] in corpus['negative']:
+                            flag_pos_neg *= -1
+            if flag_pos_neg == 1:
+                flag_small += 1
+            elif flag_pos_neg == -1:
+                flag_small -= 1
+
+        if flag_small > 0:
             cnt += 1
-        elif flag_exist == 1 and flag_good == 1:
+        elif flag_small < 0:
             cnt -= 1
-        elif flag_exist == -1 and flag_bad == 0:
-            cnt -= 1
-        elif flag_exist == -1 and flag_bad == 1:
-            cnt += 1
+
+        # flag_exist = 0
+        # flag_good = 0
+        # flag_bad = 0
+        # for j in range(1, 4):#跑i的前後比對
+        #     if i + j < len(clean_text):#debug
+        #         if clean_text[i + j] in corpus['good']:
+        #             flag_exist = 1
+        #             if clean_text[i + j - 1] in corpus['negative']:
+        #                 flag_good = 1
+        #         elif clean_text[i + j] in corpus['bad']:
+        #             flag_exist = -1
+        #             if clean_text[i + j - 1] in corpus['negative']:
+        #                 flag_bad = 1
+        #
+        #     if i - j > 0:
+        #         if clean_text[i - j] in corpus['good']:
+        #             flag_exist = 1
+        #             if clean_text[i - j - 1] in corpus['negative']:
+        #                 flag_good = 1
+        #         elif clean_text[i - j] in corpus['bad']:
+        #             flag_exist = -1
+        #             if clean_text[i - j - 1] in corpus['negative']:
+        #                 flag_bad = 1
+        #
+        # if flag_exist == 1 and flag_good == 0:
+        #     cnt += 1
+        # elif flag_exist == 1 and flag_good == 1:
+        #     cnt -= 1
+        # elif flag_exist == -1 and flag_bad == 0:
+        #     cnt -= 1
+        # elif flag_exist == -1 and flag_bad == 1:
+        #     cnt += 1
     elif clean_text[i] in corpus[topic + "_good"]:
         if i > 0:
             if clean_text[i - 1] in corpus['negative']:
@@ -363,19 +418,19 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
     if i <= 25:
         restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
         all_urls = []
+        total_add = np.array([0, 0, 0])
+        service_add = np.array([0, 0, 0])
+        food_add = np.array([0, 0, 0])
+        cp_add = np.array([0, 0, 0])
+        env_add = np.array([0, 0, 0])
+        reach_add = np.array([0, 0, 0])
+        speed_add = np.array([0, 0, 0])
         for a_site in sites:
             all_urls.append(google_crawler(restaurants_list[i], a_site))
-        for j in range(len(all_urls)):
+        for j in range(len(all_urls)):#輸入順序，選擇論壇
             # 一家餐廳在各篇文章中，六面向的正負比例
-            total_add = np.array([0, 0, 0])
-            service_add = np.array([0, 0, 0])
-            food_add = np.array([0, 0, 0])
-            cp_add = np.array([0, 0, 0])
-            env_add = np.array([0, 0, 0])
-            reach_add = np.array([0, 0, 0])
-            speed_add = np.array([0, 0, 0])
 
-            for k in range(len(all_urls[j])):
+            for k in range(len(all_urls[j])):#輸入各個網址，爬出文章
                 results = requests.get(all_urls[j][k])
                 results.encoding = 'utf-8'
                 soup = BeautifulSoup(results.text, 'html.parser')
@@ -390,9 +445,8 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                     article = pixnet_crawler(soup)
                 else:
                     continue
-
+                print(article)
                 if type(article) == 'NoneType' or article == None :
-                    print(article)
                     continue
                 else:
                     clean_text = text_clean(article)
@@ -400,6 +454,7 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                 article_total, article_service, article_food, article_cp, article_env, article_reach, article_speed = rest_count(
                     clean_text)
                 # 單篇文章累加成一家餐廳
+                print(article_total)
                 total_add += article_total
                 service_add += article_service
                 food_add += article_food
@@ -407,25 +462,27 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
                 env_add += article_env
                 reach_add += article_reach
                 speed_add += article_speed
+        print(total_add)
+        # 最後會輸出的是 一間餐廳的總文章正負比例
+        restaurant_objects[i].total[0] = int(total_add[0]) / int((total_add[0] + total_add[1] + total_add[2]))
+        restaurant_objects[i].total[1] = int(total_add[2]) / int((total_add[0] + total_add[1] + total_add[2]))
+        restaurant_objects[i].service[0] = int(service_add[0]) / int(
+                (service_add[0] + service_add[1] + service_add[2]))
+        restaurant_objects[i].service[1] = int(service_add[2]) / int(
+                (service_add[0] + service_add[1] + service_add[2]))
+        restaurant_objects[i].food[0] = int(food_add[0]) / int((food_add[0] + food_add[1] + food_add[2]))
+        restaurant_objects[i].food[1] = int(food_add[2]) / int((food_add[0] + food_add[1] + food_add[2]))
+        restaurant_objects[i].cp[0] = int(cp_add[0]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
+        restaurant_objects[i].cp[1] = int(cp_add[2]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
+        restaurant_objects[i].speed[0] = int(speed_add[0]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
+        restaurant_objects[i].speed[1] = int(speed_add[2]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
+        restaurant_objects[i].env[0] = int(env_add[0]) / int((env_add[0] + env_add[1] + env_add[2]))
+        restaurant_objects[i].env[1] = int(env_add[2]) / int((env_add[0] + env_add[1] + env_add[2]))
+        restaurant_objects[i].reach[0] = int(reach_add[0]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
+        restaurant_objects[i].reach[1] = int(reach_add[2]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
 
 
-            # 最後會輸出的是 一間餐廳的總文章正負比例
-            restaurant_objects[i].total[0] = int(total_add[0]) / int((total_add[0] + total_add[1] + total_add[2]))
-            restaurant_objects[i].total[1] = int(total_add[2]) / int((total_add[0] + total_add[1] + total_add[2]))
-            restaurant_objects[i].service[0] = int(service_add[0]) / int(
-                (service_add[0] + service_add[1] + service_add[2]))
-            restaurant_objects[i].service[1] = int(service_add[2]) / int(
-                (service_add[0] + service_add[1] + service_add[2]))
-            restaurant_objects[i].food[0] = int(food_add[0]) / int((food_add[0] + food_add[1] + food_add[2]))
-            restaurant_objects[i].food[1] = int(food_add[2]) / int((food_add[0] + food_add[1] + food_add[2]))
-            restaurant_objects[i].cp[0] = int(cp_add[0]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
-            restaurant_objects[i].cp[1] = int(cp_add[2]) / int((cp_add[0] + cp_add[1] + cp_add[2]))
-            restaurant_objects[i].speed[0] = int(speed_add[0]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
-            restaurant_objects[i].speed[1] = int(speed_add[2]) / int((speed_add[0] + speed_add[1] + speed_add[2]))
-            restaurant_objects[i].env[0] = int(env_add[0]) / int((env_add[0] + env_add[1] + env_add[2]))
-            restaurant_objects[i].env[1] = int(env_add[2]) / int((env_add[0] + env_add[1] + env_add[2]))
-            restaurant_objects[i].reach[0] = int(reach_add[0]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
-            restaurant_objects[i].reach[1] = int(reach_add[2]) / int((reach_add[0] + reach_add[1] + reach_add[2]))
+
 
     else:
         break
