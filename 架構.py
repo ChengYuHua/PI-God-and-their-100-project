@@ -1,4 +1,4 @@
-import requests
+mport requests
 from bs4 import BeautifulSoup
 from selenium import webdriver
 import time
@@ -133,39 +133,6 @@ def determine_amount(clean_text, i, topic, corpus):
             cnt += 1
         elif flag_small < 0:
             cnt -= 1
-
-        # flag_exist = 0
-        # flag_good = 0
-        # flag_bad = 0
-        # for j in range(1, 4):#跑i的前後比對
-        #     if i + j < len(clean_text):#debug
-        #         if clean_text[i + j] in corpus['good']:
-        #             flag_exist = 1
-        #             if clean_text[i + j - 1] in corpus['negative']:
-        #                 flag_good = 1
-        #         elif clean_text[i + j] in corpus['bad']:
-        #             flag_exist = -1
-        #             if clean_text[i + j - 1] in corpus['negative']:
-        #                 flag_bad = 1
-        #
-        #     if i - j > 0:
-        #         if clean_text[i - j] in corpus['good']:
-        #             flag_exist = 1
-        #             if clean_text[i - j - 1] in corpus['negative']:
-        #                 flag_good = 1
-        #         elif clean_text[i - j] in corpus['bad']:
-        #             flag_exist = -1
-        #             if clean_text[i - j - 1] in corpus['negative']:
-        #                 flag_bad = 1
-        #
-        # if flag_exist == 1 and flag_good == 0:
-        #     cnt += 1
-        # elif flag_exist == 1 and flag_good == 1:
-        #     cnt -= 1
-        # elif flag_exist == -1 and flag_bad == 0:
-        #     cnt -= 1
-        # elif flag_exist == -1 and flag_bad == 1:
-        #     cnt += 1
     elif clean_text[i] in corpus[topic + "_good"]:
         if i > 0:
             if clean_text[i - 1] in corpus['negative']:
@@ -256,7 +223,6 @@ def rest_count(a_clean_text):
     return total_score, service_score, food_score, cp_score, environment_score, reachable_score, speed_score
 
 
-# 驊有更好的寫法
 A = Restaurant()
 B = Restaurant()
 C = Restaurant()
@@ -390,13 +356,6 @@ def dcard_crawler(dcard_soup, restaurant_name):  # 餐廳的一個屬性
         return None
 
 
-url = 'https://ifoodie.tw/post/5dea600d2261390a2235125d-%E5%8F%B0%E5%8C%97%E8%90%AC%E8%8F%AF%E6%96%B0%E5%8C%97%E4%B8%89%E9%87%8D%E8%B6%85%E5%A5%BD%E5%90%83%E8%8A%B1%E7%94%9F%E6%B2%BE%E9%86%AC%E7%9F%B3%E9%A0%AD%E7%81%AB%E9%8D%8B%E6%8E%A8'
-results = requests.get(url)
-results.encoding = 'utf-8'
-soup = BeautifulSoup(results.text, 'html.parser')
-selector = etree.HTML(results.text)  # 只有ptt會用到
-
-
 def ifoodie_crawler(ifoodie_soup):
     p_tags = ifoodie_soup.find_all('p')
     article = str()
@@ -415,7 +374,7 @@ def pixnet_crawler(pixnet_soup):
 
 restaurants_list = restaurant_crawler(foodType, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
 for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-    if i <= 4:
+    if i <= 25:  # 可改參數
         store_i = i
         restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
         all_urls = []
@@ -474,8 +433,6 @@ for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 l
     else:
         break
 
-print('陳彥杰')
-
 # 排序
 # 下列各list會裝各家餐廳的各項總分
 all_total = []
@@ -486,10 +443,6 @@ all_env = []
 all_reach = []
 all_speed = []
 for i in range(len(restaurant_objects)):
-    print(i)
-    print(restaurant_objects[i])
-    print(restaurant_objects[i].name)
-    print(restaurant_objects[i].total)
     all_total.append(restaurant_objects[i].total[0])
     all_service.append(restaurant_objects[i].service[0])
     all_food.append(restaurant_objects[i].food[0])
@@ -498,8 +451,6 @@ for i in range(len(restaurant_objects)):
     all_reach.append(restaurant_objects[i].reach[0])
     all_speed.append(restaurant_objects[i].speed[0])
 
-print(all_total)
-print('蔡逸洪')
 # 下列各list會裝排序過後的餐廳總分，用index表示是第幾個object
 total_sort = []
 service_sort = []
