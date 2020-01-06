@@ -504,23 +504,36 @@ def calculate_food():
     x = str(height_entry.get())
     y = str(weight_entry.get())
     aa, bb, cc, dd, ee, ff, gg, hh = find_rest(x, y)
-<<<<<<< HEAD:1:6改重複餐廳名稱.py
 
     firstscore = str(round(aa[bb[0]].total[0], 2)*100) + "%"
     firstname = aa[bb[0]].name
     secondscore = str(round(aa[bb[1]].total[0], 2)*100) + "%"
     secondname = aa[bb[1]].name
+    thirdscore = str(round(aa[bb[2]].total[0], 2) * 100) + "%"
+    thirdname = aa[bb[2]].name
+
     result = 'No.1 推薦餐廳：{}  好評度：{}'.format(firstname,firstscore)
-=======
-    apple = str(round(aa[bb[0]].total[0], 2)*100) + "%"
-    pineapple = aa[bb[0]].name
-    result = 'No.1 推薦餐廳：{}  好評度：{}'.format(pineapple, apple)
->>>>>>> 7a43a332826c395197df5b1f8aa3ff3ed82dfb2c:圓餅圖.py
     result_label.configure(text=result)
     result2 = 'No.2 推薦餐廳：{}  好評度：{}'.format(secondname,secondscore)
     result_label2.configure(text=result2)
-    result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(secondname, secondscore)
+    result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdscore,thirdname)
     result_label3.configure(text=result3)
+
+# def callbackFunc():
+#     if comboitem.get() == '餐點':
+#         firstscore = str(round(aa[bb[0]].total[0], 2) * 100) + "%"
+#         firstname = aa[bb[0]].name
+#         secondscore = str(round(aa[bb[1]].total[0], 2) * 100) + "%"
+#         secondname = aa[bb[1]].name
+#         thirdscore = str(round(aa[bb[2]].total[0], 2) * 100) + "%"
+#         thirdname = aa[bb[2]].name
+#         result = 'No.1 推薦餐廳：{}  好評度：{}'.format(firstname, firstscore)
+#         result_label.configure(text=result)
+#         result2 = 'No.2 推薦餐廳：{}  好評度：{}'.format(secondname, secondscore)
+#         result_label2.configure(text=result2)
+#         result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdscore, thirdname)
+#         result_label3.configure(text=result3)
+
 
 
 """
@@ -558,7 +571,8 @@ weight_entry.grid(row=2,column=2,columnspan=2,sticky=tk.W)
 calculate_btn = tk.Button(window, text='GO', command=calculate_food)
 calculate_btn.grid(row=3,column=1,columnspan=2)
 combo_item = ttk.Combobox(window, value=['總評', '服務', '餐點', 'CP值', '環境', '交通', '速度'])
-combo_item.grid(row=4,column=1,columnspan=4)
+combo_item.grid(row=4,column=1)
+comboitem.bind("<<ComboboxSelected>>", self.callbackFunc) #下拉式選單呼叫
 result_label = tk.Label(window,text='apple')
 result_label.grid(row=5,column=1,sticky=tk.W)
 result_label2 = tk.Label(window,text='banana')
