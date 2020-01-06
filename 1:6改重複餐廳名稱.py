@@ -324,8 +324,13 @@ def find_rest(food_type, place):
     restaurants_list = restaurant_crawler(food_type, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
     number = 0  # 計算餐廳數
     for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
+<<<<<<< HEAD:1:6改重複餐廳名稱.py
         if i <= 4:  # 可改參數
             number += 1
+=======
+        if i <= 5:  # 可改參數
+            number += 1  # 餐廳數+1
+>>>>>>> 7a43a332826c395197df5b1f8aa3ff3ed82dfb2c:圓餅圖.py
             store_i = i
             restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
             all_urls = []
@@ -499,12 +504,18 @@ def calculate_food():
     x = str(height_entry.get())
     y = str(weight_entry.get())
     aa, bb, cc, dd, ee, ff, gg, hh = find_rest(x, y)
+<<<<<<< HEAD:1:6改重複餐廳名稱.py
 
     firstscore = str(round(aa[bb[0]].total[0], 2)*100) + "%"
     firstname = aa[bb[0]].name
     secondscore = str(round(aa[bb[1]].total[0], 2)*100) + "%"
     secondname = aa[bb[1]].name
     result = 'No.1 推薦餐廳：{}  好評度：{}'.format(firstname,firstscore)
+=======
+    apple = str(round(aa[bb[0]].total[0], 2)*100) + "%"
+    pineapple = aa[bb[0]].name
+    result = 'No.1 推薦餐廳：{}  好評度：{}'.format(pineapple, apple)
+>>>>>>> 7a43a332826c395197df5b1f8aa3ff3ed82dfb2c:圓餅圖.py
     result_label.configure(text=result)
     result2 = 'No.2 推薦餐廳：{}  好評度：{}'.format(secondname,secondscore)
     result_label2.configure(text=result2)
