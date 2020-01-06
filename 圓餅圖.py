@@ -504,10 +504,22 @@ def calculate_food():
 
     firstscore = str(round(aa[bb[0]].total[0], 2)*100) + "%"
     firstname = aa[bb[0]].name
-    secondscore = str(round(aa[bb[1]].total[0], 2)*100) + "%"
+
+    second_index = 1
+    secondscore = str(round(aa[bb[1]].total[0], 2) * 100) + "%"
     secondname = aa[bb[1]].name
-    thirdscore = str(round(aa[bb[2]].total[0], 2) * 100) + "%"
+    while secondname == firstname:
+        second_index += 1
+        secondscore = str(round(aa[bb[second_index]].total[0], 2) * 100) + "%"
+        secondname = aa[bb[second_index]].name
+
+    third_index = second_index + 1
+    thirdscore = str(round(aa[bb[2]].total[0], 2)*100) + "%"
     thirdname = aa[bb[2]].name
+    while thirdname == firstname or thirdname == secondname:
+        third_index += 1
+        thirdscore = str(round(aa[bb[third_index]].total[0], 2) * 100) + "%"
+        thirdname = aa[bb[third_index]].name
 
     result = 'No.1 推薦餐廳：{}  好評度：{}'.format(firstname,firstscore)
     result_label.configure(text=result)
@@ -515,6 +527,7 @@ def calculate_food():
     result_label2.configure(text=result2)
     result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdscore,thirdname)
     result_label3.configure(text=result3)
+
 
 def callbackFunc():
     if comboitem.get() == '餐點':
@@ -532,7 +545,6 @@ def callbackFunc():
         result_label3.configure(text=result3)
 
 
-
 """
     orange = aa[bb[1]].total[0]
     orange = str(round(float(orange), 2) * 100)
@@ -548,34 +560,34 @@ def callbackFunc():
 
 
 header_label = tk.Label(window, text='美食推薦系統')
-header_label.grid(row=0,column=1,columnspan=2)
+header_label.grid(row=0, column=1, columnspan=2)
 
 # 以下為 height_frame 群組
 height_frame = tk.Frame(window)
 # 向上對齊父元件
 height_label = tk.Label(text='食物種類')
-height_label.grid(row=1,column=0,columnspan=2,sticky=tk.E)
+height_label.grid(row=1, column=0, columnspan=2, sticky=tk.E)
 height_entry = tk.Entry()
-height_entry.grid(row=1,column=2,columnspan=2,sticky=tk.W)
+height_entry.grid(row=1, column=2, columnspan=2, sticky=tk.W)
 
 # 以下為 weight_frame 群組
 
 weight_label = tk.Label(text='地點')
-weight_label.grid(row=2,column=0,columnspan=2,sticky=tk.E)
+weight_label.grid(row=2, column=0, columnspan=2, sticky=tk.E)
 weight_entry = tk.Entry()
-weight_entry.grid(row=2,column=2,columnspan=2,sticky=tk.W)
+weight_entry.grid(row=2, column=2, columnspan=2, sticky=tk.W)
 
 calculate_btn = tk.Button(window, text='GO', command=calculate_food)
-calculate_btn.grid(row=3,column=1,columnspan=2)
+calculate_btn.grid(row=3, column=1, columnspan=2)
 combo_item = ttk.Combobox(window, value=['總評', '服務', '餐點', 'CP值', '環境', '交通', '速度'])
-combo_item.grid(row=4,column=2)
-combo_item.bind("<<ComboboxSelected>>", callbackFunc) #下拉式選單呼叫
-result_label = tk.Label(window,text='apple')
-result_label.grid(row=5,column=1,sticky=tk.W)
-result_label2 = tk.Label(window,text='banana')
-result_label2.grid(row=6,column=1,sticky=tk.W)
-result_label3 = tk.Label(window,text='car')
-result_label3.grid(row=7,column=1,sticky=tk.W)
+combo_item.grid(row=4, column=2)
+combo_item.bind("<<ComboboxSelected>>", callbackFunc)  # 下拉式選單呼叫
+result_label = tk.Label(window, text='apple')
+result_label.grid(row=5, column=1, sticky=tk.W)
+result_label2 = tk.Label(window, text='banana')
+result_label2.grid(row=6, column=1, sticky=tk.W)
+result_label3 = tk.Label(window, text='car')
+result_label3.grid(row=7, column=1, sticky=tk.W)
 
 # 運行主程式
 window.mainloop()
