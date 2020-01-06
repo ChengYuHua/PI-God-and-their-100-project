@@ -286,7 +286,7 @@ def pixnet_crawler(pixnet_soup):
         article += tag.get_text()
     return article
 
-"""
+
 A = Restaurant()
 B = Restaurant()
 C = Restaurant()
@@ -314,39 +314,14 @@ X = Restaurant()
 Y = Restaurant()
 Z = Restaurant()
 restaurant_objects = [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z]
-"""
+
 
 def find_rest(food_type, place):
-    A = Restaurant()
-    B = Restaurant()
-    C = Restaurant()
-    D = Restaurant()
-    E = Restaurant()
-    F = Restaurant()
-    G = Restaurant()
-    H = Restaurant()
-    I = Restaurant()
-    J = Restaurant()
-    K = Restaurant()
-    L = Restaurant()
-    M = Restaurant()
-    N = Restaurant()
-    O = Restaurant()
-    P = Restaurant()
-    Q = Restaurant()
-    R = Restaurant()
-    S = Restaurant()
-    T = Restaurant()
-    U = Restaurant()
-    V = Restaurant()
-    W = Restaurant()
-    X = Restaurant()
-    Y = Restaurant()
-    Z = Restaurant()
-    restaurant_objects = [A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z]
     restaurants_list = restaurant_crawler(food_type, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
+    number = 0  # 計算餐廳數
     for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-        if i <= 0:  # 可改參數
+        if i <= 5:  # 可改參數
+            number += 1  # 餐廳數+1
             store_i = i
             restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
             all_urls = []
@@ -422,7 +397,7 @@ def find_rest(food_type, place):
     all_env = []
     all_reach = []
     all_speed = []
-    for i in range(len(restaurant_objects)):
+    for i in range(number):
         all_total.append(restaurant_objects[i].total[0])
         all_service.append(restaurant_objects[i].service[0])
         all_food.append(restaurant_objects[i].food[0])
@@ -520,9 +495,9 @@ def calculate_food():
     x = str(height_entry.get())
     y = str(weight_entry.get())
     aa, bb, cc, dd, ee, ff, gg, hh = find_rest(x, y)
-    apple = aa[bb[0]].total[0]
+    apple = str(round(aa[bb[0]].total[0], 2)*100) + "%"
     pineapple = aa[bb[0]].name
-    result = 'No.1 推薦餐廳：{} {}'.format(pineapple, apple)
+    result = 'No.1 推薦餐廳：{}  好評度：{}'.format(pineapple, apple)
     result_label.configure(text=result)
 
 """
