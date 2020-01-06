@@ -324,9 +324,7 @@ def find_rest(food_type, place):
     restaurants_list = restaurant_crawler(food_type, place)  # 使用爬蟲從google map找出所有符合條件的餐廳，用list的形式存入restaurants 的 list
     number = 0  # 計算餐廳數
     for i in range(len(restaurants_list)):  # 使用 for 迴圈從 restaurants 的 list 裡，一家一家餐廳抓出來
-        if i <= 4:  # 可改參數
-            number += 1
-        if i <= 5:  # 可改參數
+        if i <= 3:  # 可改參數
             number += 1  # 餐廳數+1
             store_i = i
             restaurant_objects[i].name = restaurants_list[i]  # restaurant_objects[i] 是 class
@@ -492,7 +490,7 @@ hh = []
 window = tk.Tk()
 # 設定視窗標題、大小和背景顏色
 window.title('食神')
-window.geometry('600x1000')
+window.geometry('512x900+200+100')
 window.configure(background='white')
 
 
@@ -525,23 +523,24 @@ def calculate_food():
     result_label.configure(text=result)
     result2 = 'No.2 推薦餐廳：{}  好評度：{}'.format(secondname,secondscore)
     result_label2.configure(text=result2)
-    result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdscore,thirdname)
+    result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdname,thirdscore)
     result_label3.configure(text=result3)
 
 
 def callbackFunc():
-    if comboitem.get() == '餐點':
-        firstscore = str(round(aa[cc[0]].total[0], 2) * 100) + "%"
+    global x, y, aa, bb, cc, dd, ee, ff, gg, hh
+    if combo_item.get() == '服務':
+        firstscore = str(round(aa[cc[0]].service[0], 2) * 100) + "%"
         firstname = aa[cc[0]].name
-        secondscore = str(round(aa[cc[1]].total[0], 2) * 100) + "%"
+        secondscore = str(round(aa[cc[1]].service[0], 2) * 100) + "%"
         secondname = aa[cc[1]].name
-        thirdscore = str(round(aa[cc[2]].total[0], 2) * 100) + "%"
+        thirdscore = str(round(aa[cc[2]].service[0], 2) * 100) + "%"
         thirdname = aa[cc[2]].name
         result = 'No.1 推薦餐廳：{}  好評度：{}'.format(firstname, firstscore)
-        result_label.configure(text=result)
+        result_label.configure(text='蔡逸洪')
         result2 = 'No.2 推薦餐廳：{}  好評度：{}'.format(secondname, secondscore)
         result_label2.configure(text=result2)
-        result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdscore, thirdname)
+        result3 = 'No.3 推薦餐廳：{}  好評度：{}'.format(thirdname, thirdscore)
         result_label3.configure(text=result3)
 
 
@@ -582,12 +581,12 @@ calculate_btn.grid(row=3, column=1, columnspan=2)
 combo_item = ttk.Combobox(window, value=['總評', '服務', '餐點', 'CP值', '環境', '交通', '速度'])
 combo_item.grid(row=4, column=2)
 combo_item.bind("<<ComboboxSelected>>", callbackFunc)  # 下拉式選單呼叫
-result_label = tk.Label(window, text='apple')
-result_label.grid(row=5, column=1, sticky=tk.W)
-result_label2 = tk.Label(window, text='banana')
-result_label2.grid(row=6, column=1, sticky=tk.W)
-result_label3 = tk.Label(window, text='car')
-result_label3.grid(row=7, column=1, sticky=tk.W)
+result_label = tk.Label(window, text='')
+result_label.grid(row=5, column=1,columnspan=4, sticky=tk.W)
+result_label2 = tk.Label(window, text='')
+result_label2.grid(row=6, column=1,columnspan=4, sticky=tk.W)
+result_label3 = tk.Label(window, text='')
+result_label3.grid(row=7, column=1,columnspan=4, sticky=tk.W)
 
 # 運行主程式
 window.mainloop()
